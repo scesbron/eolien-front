@@ -1,0 +1,16 @@
+{
+  "extends": ["airbnb", "plugin:jsx-a11y/recommended"],
+  "env": {
+    "browser": true,
+    "jest/globals": true
+  },
+  "plugins": ["jsx-a11y", "jest", "react-hooks"],
+  "rules": {
+    "max-len": [ "error", {
+      "code": 120
+    }],
+    "react/jsx-filename-extension": [1, { "extensions": [".jsx"] }],
+    "react/jsx-props-no-spreading": "off",
+    "react-hooks/exhaustive-deps": "error"
+  }
+}
