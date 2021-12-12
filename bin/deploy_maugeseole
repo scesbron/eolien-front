@@ -1,5 +1,7 @@
 #!/bin/bash
 yarn
 rm -rf build
+cp .env.maugeseole .env.production
 yarn build
-scp -r build/* rails@maugeseole:front/
+scp -r build/* deploy@maugeseole:front/
+rm -f .env.production
