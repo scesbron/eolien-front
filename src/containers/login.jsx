@@ -11,8 +11,10 @@ import PropTypes from 'prop-types';
 
 import * as duck from '../ducks/user';
 import { userType } from '../types';
-import logo from '../assets/images/hyrome.png';
+import hyrome from '../assets/images/hyrome.png';
+import grandsFresnes from '../assets/images/grands-fresnes.png';
 import { FORGOTTEN_PASSWORD } from '../constants/routes';
+import { SITE_NAME } from '../config';
 
 const useStyles = makeStyles({
   container: {
@@ -63,7 +65,7 @@ const Login = ({
       <Form onSubmit={onSubmit}>
         {({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className={classes.form}>
-            <img src={logo} alt="Logo" className={classes.logo} />
+            <img src={SITE_NAME === 'grands-fresnes' ? grandsFresnes : hyrome} alt="Logo" className={classes.logo} />
             {errors.length > 0 && (
               <Alert variant="filled" severity="error">
                 {errors.join('\n')}
