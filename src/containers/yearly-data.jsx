@@ -100,7 +100,7 @@ const YearlyData = ({ init, yearlyData, getYearlyData }) => {
       startDate: max([init.value.minDate, subYears(previous.startDate, 1)]),
       endDate: subDays(previous.startDate, 1),
     }));
-  }, [init.value.minDate]);
+  }, [init]);
 
   const onNext = useCallback(() => {
     setYear((previous) => ({
@@ -112,7 +112,7 @@ const YearlyData = ({ init, yearlyData, getYearlyData }) => {
   if (!year) return null;
 
   const lastYear = isEqual(maxValue(init), year.endDate);
-  const firstYear = init.value.minDate.year === year.startDate.year;
+  const firstYear = init.value.minDate.getYear() === year.startDate.getYear();
 
   return (
     <StyledContainer disableGutters>
