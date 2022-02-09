@@ -1,0 +1,7 @@
+#!/bin/bash
+yarn
+rm -rf build
+cp .env.eolys .env.production
+yarn build
+scp -r build/* deploy@eolys.atvc.fr:front/
+rm -f .env.production

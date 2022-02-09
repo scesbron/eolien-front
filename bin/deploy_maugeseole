@@ -3,5 +3,5 @@ yarn
 rm -rf build
 cp .env.maugeseole .env.production
 yarn build
-scp -r build/* deploy@maugeseole:front/
+scp -r build/* deploy@maugeseole.atvc.fr:front/
 rm -f .env.production
