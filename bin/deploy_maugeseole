@@ -2,6 +2,7 @@
 yarn
 rm -rf build
 cp .env.maugeseole .env.production
+cp -r public-maugeseole public
 yarn build
 scp -r build/* deploy@maugeseole.atvc.fr:front/
 rm -f .env.production
