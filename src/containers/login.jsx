@@ -11,11 +11,7 @@ import PropTypes from 'prop-types';
 
 import * as duck from '../ducks/user';
 import { userType } from '../types';
-import hyrome from '../assets/images/hyrome.png';
-import grandsFresnes from '../assets/images/grands-fresnes.png';
-import grandesLevees from '../assets/images/grandes-levees.png';
 import { FORGOTTEN_PASSWORD } from '../constants/routes';
-import { SITE_NAME } from '../config';
 
 const useStyles = makeStyles({
   container: {
@@ -40,16 +36,6 @@ const useStyles = makeStyles({
     marginTop: '1rem',
   },
 });
-
-const getLogo = () => {
-  if (SITE_NAME === 'grands-fresnes') {
-    return grandsFresnes;
-  }
-  if (SITE_NAME === 'grandes-levees') {
-    return grandesLevees;
-  }
-  return hyrome;
-};
 
 const Login = ({
   user, loading, errors, login, setErrors,
@@ -76,7 +62,7 @@ const Login = ({
       <Form onSubmit={onSubmit}>
         {({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className={classes.form}>
-            <img src={getLogo()} alt="Logo" className={classes.logo} />
+            <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="Logo" className={classes.logo} />
             {errors.length > 0 && (
               <Alert variant="filled" severity="error">
                 {errors.join('\n')}

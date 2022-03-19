@@ -12,7 +12,6 @@ import Link from '@material-ui/core/Link';
 import { green } from '@material-ui/core/colors';
 
 import * as duck from '../ducks/user';
-import logo from '../assets/images/hyrome.png';
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
 
@@ -79,7 +78,7 @@ const ForgottenPassword = ({
       <Form onSubmit={onSubmit} initialValues={{ username: query.get('username') }}>
         {({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className={classes.form}>
-            <img src={logo} alt="Logo" className={classes.logo} />
+            <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="Logo" className={classes.logo} />
             <div className={classes.intro}>
               <Typography variant="h4">Mot de passe oublié</Typography>
               <Typography>

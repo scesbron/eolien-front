@@ -11,7 +11,6 @@ import PropTypes from 'prop-types';
 import { green } from '@material-ui/core/colors';
 
 import * as duck from '../ducks/user';
-import logo from '../assets/images/hyrome.png';
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
 
@@ -92,7 +91,7 @@ const NewPassword = ({
       <Form onSubmit={onSubmit} validate={validate}>
         {({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className={classes.form}>
-            <img src={logo} alt="Logo" className={classes.logo} />
+            <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="Logo" className={classes.logo} />
             <div className={classes.intro}>
               <Typography variant="h4">Changez votre mot de passe</Typography>
             </div>
