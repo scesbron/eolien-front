@@ -1,6 +1,7 @@
 #!/bin/bash
 yarn
 rm -rf build
+rm -rf public
 cp .env.maugeseole .env.production
 cp -r public-maugeseole public
 yarn build

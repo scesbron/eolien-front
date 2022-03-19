@@ -1,7 +1,9 @@
 #!/bin/bash
 yarn
 rm -rf build
+rm -rf public
 cp .env.hyrome .env.production
+cp -r public-hyrome public
 yarn build
 scp -r build/* ct-hyrome:front/
 rm -f .env.production
