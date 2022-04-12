@@ -7,13 +7,13 @@ import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
 import { connect } from 'react-redux';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import Link from '@material-ui/core/Link';
 import { green } from '@material-ui/core/colors';
 
 import * as duck from '../ducks/user';
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
+import { RootState } from '../types';
 
 const useStyles = makeStyles({
   container: {
@@ -50,9 +50,21 @@ const useStyles = makeStyles({
   },
 });
 
+type ForgottenPasswordProps = {
+  asking: boolean;
+  asked: boolean;
+  errors: string[];
+  forgottenPassword: (username: string) => void;
+  setErrors: () => void;
+};
+
 const ForgottenPassword = ({
-  asking, asked, errors, forgottenPassword, setErrors,
-}) => {
+  asking,
+  asked,
+  errors,
+  forgottenPassword,
+  setErrors,
+}: ForgottenPasswordProps) => {
   const classes = useStyles();
   const history = useHistory();
   const query = useQuery();
@@ -60,7 +72,10 @@ const ForgottenPassword = ({
   const [success, setSuccess] = useState(false);
   const buttonClass = success ? classes.buttonSuccess : classes.button;
 
-  useEffect(() => { setErrors(); }, [setErrors]);
+  useEffect(() => {
+    setErrors();
+  }, [setErrors]);
+
   useEffect(() => {
     if (submitted && asked) {
       setSuccess(true);
@@ -68,31 +83,44 @@ const ForgottenPassword = ({
     }
   }, [history, asked, submitted]);
 
-  const onSubmit = useCallback((values) => {
-    setSubmitted(true);
-    forgottenPassword(values.username);
-  }, [forgottenPassword]);
+  const onSubmit = useCallback(
+    (values) => {
+      setSubmitted(true);
+      forgottenPassword(values.username);
+    },
+    [forgottenPassword],
+  );
 
   return (
     <div className={classes.container}>
       <Form onSubmit={onSubmit} initialValues={{ username: query.get('username') }}>
         {({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className={classes.form}>
-            <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="Logo" className={classes.logo} />
+            <img
+              src={`${process.env.PUBLIC_URL}/images/logo.png`}
+              alt='Logo'
+              className={classes.logo}
+            />
             <div className={classes.intro}>
-              <Typography variant="h4">Mot de passe oublié</Typography>
+              <Typography variant='h4'>Mot de passe oublié</Typography>
               <Typography>
                 Indiquez votre nom d&apos;utilisateur pour recevoir par email un lien pour
                 réinitialiser votre mot de passe.
               </Typography>
             </div>
             {errors.length > 0 && (
-              <Alert variant="filled" severity="error">
+              <Alert variant='filled' severity='error'>
                 {errors.join('\n')}
               </Alert>
             )}
-            <TextField label="Nom d'utilisateur" name="username" required />
-            <Button type="submit" variant="contained" color="primary" className={buttonClass} disabled={asking}>
+            <TextField label="Nom d'utilisateur" name='username' required />
+            <Button
+              type='submit'
+              variant='contained'
+              color='primary'
+              className={buttonClass}
+              disabled={asking}
+            >
               {success ? 'Email de réinitialisation envoyé' : 'Envoyer'}
             </Button>
             <Link component={RouterLink} to={LOGIN} className={classes.link}>
@@ -105,15 +133,7 @@ const ForgottenPassword = ({
   );
 };
 
-ForgottenPassword.propTypes = {
-  asking: PropTypes.bool.isRequired,
-  asked: PropTypes.bool.isRequired,
-  errors: PropTypes.arrayOf(PropTypes.string).isRequired,
-  forgottenPassword: PropTypes.func.isRequired,
-  setErrors: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   asking: state.user.forgottenPasswordAsking,
   asked: state.user.forgottenPasswordAsked,
   errors: state.user.errors,

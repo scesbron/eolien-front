@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import PropTypes from 'prop-types';
 import styled, { keyframes } from 'styled-components';
 import { green } from '@material-ui/core/colors';
 
@@ -14,7 +13,10 @@ const keyFrame = keyframes`
   }
 `;
 
-const Svg = styled.img`
+const Svg = styled.img<{
+  $size: number;
+  $color: string;
+}>`
   width: ${(props) => `${props.$size}px`};
   height: ${(props) => `${props.$size}px`};
   fill: ${(props) => props.$color};
@@ -24,17 +26,13 @@ const Svg = styled.img`
   transform-origin: 50% 50%;
 `;
 
-const Loader = ({ color, size }) => (
-  <Svg src={windTurbine} $size={size} $color={color} />
-);
-Loader.propTypes = {
-  color: PropTypes.string,
-  size: PropTypes.number,
+type LoaderProps = {
+  color?: string;
+  size?: number;
 };
 
-Loader.defaultProps = {
-  color: green[500],
-  size: 100,
-};
+const Loader = ({ color = green[500], size = 100 }: LoaderProps) => (
+  <Svg src={windTurbine} $size={size} $color={color} />
+);
 
 export default memo(Loader);

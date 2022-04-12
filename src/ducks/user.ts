@@ -1,9 +1,10 @@
 import { put, call, takeLatest } from 'redux-saga/effects';
+import { AnyAction } from 'redux';
 
 import * as api from '../api';
 import { getErrors } from './utils';
 import { setAuthorization } from '../api';
-import { parseApiDate } from '../utils/date';
+import { ResponseGenerator, User, UserState } from '../types';
 
 // Constants
 
@@ -21,19 +22,22 @@ export const INITIALIZED = 'USER_INITIALIZED';
 // Actions
 
 export const logout = () => ({ type: LOGOUT });
-export const login = (username, password, rememberMe) => (
-  { type: LOGIN, payload: { username, password, rememberMe } }
-);
-export const forgottenPassword = (username) => (
-  { type: FORGOTTEN_PASSWORD, payload: { username } }
-);
-export const updatePassword = (token, password, confirmation) => (
-  { type: UPDATE_PASSWORD, payload: { token, password, confirmation } }
-);
-export const load = () => ({ type: LOAD });
-export const updateUser = (user) => ({ type: UPDATE, payload: user });
-export const setErrors = (errors) => ({ type: SET_ERRORS, payload: errors });
-export const initialized = (user) => ({ type: INITIALIZED, payload: user });
+export const login = (username: string, password: string, rememberMe?: boolean) => ({
+  type: LOGIN,
+  payload: { username, password, rememberMe },
+});
+export const forgottenPassword = (username: string) => ({
+  type: FORGOTTEN_PASSWORD,
+  payload: { username },
+});
+export const updatePassword = (token: string | null, password: string, confirmation: string) => ({
+  type: UPDATE_PASSWORD,
+  payload: { token, password, confirmation },
+});
+export const load = () => ({ type: LOAD, payload: undefined });
+export const updateUser = (user?: User) => ({ type: UPDATE, payload: user });
+export const setErrors = (errors?: string[]) => ({ type: SET_ERRORS, payload: errors });
+export const initialized = (user?: User) => ({ type: INITIALIZED, payload: user });
 export const forgottenPasswordSuccess = () => ({ type: FORGOTTEN_PASSWORD_SUCCESS });
 export const updatePasswordSuccess = () => ({ type: UPDATE_PASSWORD_SUCCESS });
 
@@ -49,9 +53,13 @@ export function* logoutSaga() {
   }
 }
 
-export function* loginSaga({ payload: { username, password, rememberMe } }) {
+type LoginSagaParams = {
+  payload: { username: string; password: string; rememberMe?: boolean };
+};
+
+export function* loginSaga({ payload: { username, password, rememberMe } }: LoginSagaParams) {
   try {
-    const response = yield call(api.session.create, username, password);
+    const response: ResponseGenerator = yield call(api.session.create, username, password);
     setAuthorization(response.headers.authorization, rememberMe);
     yield put(updateUser(response.data));
   } catch (error) {
@@ -61,7 +69,7 @@ export function* loginSaga({ payload: { username, password, rememberMe } }) {
 
 export function* loadSaga() {
   try {
-    const response = yield call(api.user.get);
+    const response: ResponseGenerator = yield call(api.user.get);
     yield put(initialized(response.data));
   } catch (error) {
     setAuthorization();
@@ -69,7 +77,11 @@ export function* loadSaga() {
   }
 }
 
-export function* forgottenPasswordSaga({ payload: { username } }) {
+type ForgottenPasswordSagaParams = {
+  payload: { username: string };
+};
+
+export function* forgottenPasswordSaga({ payload: { username } }: ForgottenPasswordSagaParams) {
   try {
     yield call(api.password.create, username);
     yield put(forgottenPasswordSuccess());
@@ -78,7 +90,13 @@ export function* forgottenPasswordSaga({ payload: { username } }) {
   }
 }
 
-export function* updatePasswordSaga({ payload: { token, password, confirmation } }) {
+type UpdatePasswordSagaParams = {
+  payload: { token: string | null; password: string; confirmation: string };
+};
+
+export function* updatePasswordSaga({
+  payload: { token, password, confirmation },
+}: UpdatePasswordSagaParams) {
   try {
     yield call(api.password.update, token, password, confirmation);
     yield put(updatePasswordSuccess());
@@ -89,15 +107,18 @@ export function* updatePasswordSaga({ payload: { token, password, confirmation }
 
 export function* sagas() {
   yield takeLatest(LOGOUT, logoutSaga);
+  // @ts-ignore
   yield takeLatest(LOGIN, loginSaga);
   yield takeLatest(LOAD, loadSaga);
+  // @ts-ignore
   yield takeLatest(FORGOTTEN_PASSWORD, forgottenPasswordSaga);
+  // @ts-ignore
   yield takeLatest(UPDATE_PASSWORD, updatePasswordSaga);
 }
 
 // Reducers
 
-export const initialState = {
+export const initialState: UserState = {
   initializing: false,
   initialized: false,
   loading: false,
@@ -109,20 +130,10 @@ export const initialState = {
   errors: [],
 };
 
-const convert = (user) => (!user ? undefined : {
-  ...user,
-  birthDate: parseApiDate(user.birthDate),
-  loans: user.loans ? user.loans.map((loan) => ({
-    ...loan,
-    date: parseApiDate(loan.date),
-  })) : user.loans,
-  shares: user.shares ? user.shares.map((share) => ({
-    ...share,
-    date: parseApiDate(share.date),
-  })) : user.shares,
-});
-
-export const reducer = (state = initialState, action) => {
+export const reducer = (
+  state = initialState,
+  action: AnyAction = { type: '', payload: undefined },
+) => {
   const { payload } = action;
 
   switch (action.type) {
@@ -144,7 +155,7 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         loading: false,
-        current: convert(payload),
+        current: payload,
         errors: [],
       };
     case INITIALIZED:
@@ -152,7 +163,7 @@ export const reducer = (state = initialState, action) => {
         ...state,
         initializing: false,
         initialized: true,
-        current: convert(payload),
+        current: payload,
       };
     case SET_ERRORS:
       return {

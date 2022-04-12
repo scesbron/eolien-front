@@ -3,13 +3,11 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-import configureStore from './store';
+import { store } from './store';
 import './index.css';
 import App from './App';
 import { initAuthorization } from './api';
 import AppLoader from './containers/app-loader';
-
-const store = configureStore();
 
 initAuthorization();
 

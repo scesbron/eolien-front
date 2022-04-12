@@ -1,6 +1,7 @@
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import { fork } from 'redux-saga/effects';
+// @ts-ignore
 import logger from 'redux-logger';
 
 import * as user from './ducks/user';
@@ -27,4 +28,4 @@ const configureStore = () => {
   return store;
 };
 
-export default configureStore;
+export const store = configureStore();

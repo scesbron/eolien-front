@@ -7,12 +7,12 @@ import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import { green } from '@material-ui/core/colors';
 
 import * as duck from '../ducks/user';
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
+import { RootState } from '../types';
 
 const useStyles = makeStyles({
   container: {
@@ -49,8 +49,13 @@ const useStyles = makeStyles({
   },
 });
 
-const validate = (values) => {
-  const errors = {};
+type ValidateValues = {
+  password?: string;
+  confirmation?: string;
+};
+
+const validate = (values: ValidateValues) => {
+  const errors: Partial<ValidateValues> = {};
   if (!values.password) {
     errors.password = 'Le nouveau mot de passe est obligatoire';
   }
@@ -63,9 +68,21 @@ const validate = (values) => {
   return errors;
 };
 
+type NewPasswordProps = {
+  updating: boolean;
+  updated: boolean;
+  errors: string[];
+  updatePassword: (token: string | null, password: string, confirmation: string) => void;
+  setErrors: () => void;
+};
+
 const NewPassword = ({
-  updating, updated, errors, updatePassword, setErrors,
-}) => {
+  updating,
+  updated,
+  errors,
+  updatePassword,
+  setErrors,
+}: NewPasswordProps) => {
   const classes = useStyles();
   const history = useHistory();
   const query = useQuery();
@@ -73,7 +90,9 @@ const NewPassword = ({
   const [success, setSuccess] = useState(false);
   const buttonClass = success ? classes.buttonSuccess : classes.button;
 
-  useEffect(() => { setErrors(); }, [setErrors]);
+  useEffect(() => {
+    setErrors();
+  }, [setErrors]);
   useEffect(() => {
     if (submitted && updated) {
       setSuccess(true);
@@ -81,28 +100,41 @@ const NewPassword = ({
     }
   }, [history, submitted, updated]);
 
-  const onSubmit = useCallback((values) => {
-    setSubmitted(true);
-    updatePassword(query.get('token'), values.password, values.confirmation);
-  }, [updatePassword, query]);
+  const onSubmit = useCallback(
+    (values) => {
+      setSubmitted(true);
+      updatePassword(query.get('token'), values.password, values.confirmation);
+    },
+    [updatePassword, query],
+  );
 
   return (
     <div className={classes.container}>
       <Form onSubmit={onSubmit} validate={validate}>
         {({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className={classes.form}>
-            <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="Logo" className={classes.logo} />
+            <img
+              src={`${process.env.PUBLIC_URL}/images/logo.png`}
+              alt='Logo'
+              className={classes.logo}
+            />
             <div className={classes.intro}>
-              <Typography variant="h4">Changez votre mot de passe</Typography>
+              <Typography variant='h4'>Changez votre mot de passe</Typography>
             </div>
             {errors.length > 0 && (
-              <Alert variant="filled" severity="error">
+              <Alert variant='filled' severity='error'>
                 {errors.join('\n')}
               </Alert>
             )}
-            <TextField label="Nouveau mot de passe" type="password" name="password" />
-            <TextField label="Confirmez votre mot de passe" type="password" name="confirmation" />
-            <Button type="submit" variant="contained" color="primary" className={buttonClass} disabled={updating}>
+            <TextField label='Nouveau mot de passe' type='password' name='password' />
+            <TextField label='Confirmez votre mot de passe' type='password' name='confirmation' />
+            <Button
+              type='submit'
+              variant='contained'
+              color='primary'
+              className={buttonClass}
+              disabled={updating}
+            >
               {success ? 'Mot de passe modifié' : 'Changer mon mot de passe'}
             </Button>
           </form>
@@ -112,15 +144,7 @@ const NewPassword = ({
   );
 };
 
-NewPassword.propTypes = {
-  updating: PropTypes.bool.isRequired,
-  updated: PropTypes.bool.isRequired,
-  errors: PropTypes.arrayOf(PropTypes.string).isRequired,
-  updatePassword: PropTypes.func.isRequired,
-  setErrors: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   updating: state.user.passwordUpdating,
   updated: state.user.passwordUpdated,
   errors: state.user.errors,

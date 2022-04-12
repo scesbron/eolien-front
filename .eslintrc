@@ -1,16 +1,29 @@
 {
-  "extends": ["airbnb", "plugin:jsx-a11y/recommended"],
+  "extends": ["airbnb", "airbnb-typescript", "plugin:jsx-a11y/recommended", "prettier"],
   "env": {
     "browser": true,
     "jest/globals": true
   },
-  "plugins": ["jsx-a11y", "jest", "react-hooks"],
+  "plugins": ["jsx-a11y", "jest", "react-hooks", "@typescript-eslint"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": ["./tsconfig.json"]
+  },
   "rules": {
-    "max-len": [ "error", {
-      "code": 120
-    }],
-    "react/jsx-filename-extension": [1, { "extensions": [".jsx"] }],
+    "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
     "react/jsx-props-no-spreading": "off",
-    "react-hooks/exhaustive-deps": "error"
+    "react-hooks/exhaustive-deps": "error",
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": "arrow-function",
+        "unnamedComponents": "arrow-function"
+      }
+    ],
+    "react/require-default-props": "off",
+    "react/jsx-no-useless-fragment": ["error", {
+      "allowExpressions": true
+    }],
+    "import/prefer-default-export": "off"
   }
 }

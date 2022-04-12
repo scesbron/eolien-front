@@ -1,18 +1,15 @@
 import React, { useCallback } from 'react';
-import {
-  Switch, Route, useHistory, useLocation,
-} from 'react-router-dom';
+import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import BarChartIcon from '@material-ui/icons/BarChart';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 
 import PrivateRoute from './routes/private-route';
 import Login from './containers/login';
-import { userType } from './types';
+import { RootState, User } from './types';
 import Home from './containers/home';
 import * as userDuck from './ducks/user';
 import ForgottenPassword from './containers/forgotten-password';
@@ -21,8 +18,6 @@ import NewPassword from './containers/new-password';
 
 const navigationRoutes = [
   { path: '/', value: 'home' },
-  { path: '/profil', value: 'profile' },
-  { path: '/investissement', value: 'investment' },
   { path: '/logout', value: 'logout' },
 ];
 
@@ -40,26 +35,32 @@ const useStyles = makeStyles({
   },
 });
 
-const valueFromPath = (path) => (
-  (navigationRoutes.find((route) => route.path === path) || { value: 'home' }).value
-);
+const valueFromPath = (path: string) =>
+  (navigationRoutes.find((route) => route.path === path) || { value: 'home' }).value;
 
-const pathFromValue = (value) => (
-  navigationRoutes.find((route) => route.value === value).path
-);
+const pathFromValue = (value: string) =>
+  navigationRoutes.find((route) => route?.value === value)?.path || navigationRoutes[0].path;
 
-function App({ user, logout }) {
+type AppProps = {
+  user?: User;
+  logout: () => void;
+};
+
+const App = ({ user, logout }: AppProps) => {
   const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
 
-  const navigateTo = useCallback((event, newValue) => {
-    if (newValue === 'logout') {
-      logout();
-    } else {
-      history.push(pathFromValue(newValue));
-    }
-  }, [history, logout]);
+  const navigateTo = useCallback(
+    (event, newValue) => {
+      if (newValue === 'logout') {
+        logout();
+      } else {
+        history.push(pathFromValue(newValue));
+      }
+    },
+    [history, logout],
+  );
 
   return (
     <div className={classes.container}>
@@ -73,7 +74,7 @@ function App({ user, logout }) {
         <Route path={NEW_PASSWORD}>
           <NewPassword />
         </Route>
-        <PrivateRoute path="/">
+        <PrivateRoute path='/'>
           <Home />
         </PrivateRoute>
       </Switch>
@@ -84,34 +85,15 @@ function App({ user, logout }) {
           showLabels
           className={classes.navigation}
         >
-          <BottomNavigationAction
-            to="/"
-            label="Production"
-            value="home"
-            icon={<BarChartIcon />}
-          />
-          <BottomNavigationAction
-            to="/logout"
-            label="Déconnexion"
-            value="logout"
-            icon={<ExitToAppIcon />}
-          />
+          <BottomNavigationAction label='Production' value='home' icon={<BarChartIcon />} />
+          <BottomNavigationAction label='Déconnexion' value='logout' icon={<ExitToAppIcon />} />
         </BottomNavigation>
       )}
     </div>
   );
-}
-
-App.propTypes = {
-  user: userType,
-  logout: PropTypes.func.isRequired,
 };
 
-App.defaultProps = {
-  user: undefined,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   user: state.user.current,
 });
 

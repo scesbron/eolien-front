@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { PropsWithChildren, useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 
 import * as userDuck from '../ducks/user';
 import Loader from '../components/loader';
+import { RootState } from '../types';
 
 const Container = styled.div`
   display: flex;
@@ -13,30 +13,27 @@ const Container = styled.div`
   height: 100%;
 `;
 
-const AppLoader = ({
-  children, initializing, initialized, load,
-}) => {
+type AppLoaderProps = PropsWithChildren<{
+  initializing: boolean;
+  initialized: boolean;
+  load: () => void;
+}>;
+
+const AppLoader = ({ children, initializing, initialized, load }: AppLoaderProps) => {
   useEffect(() => {
     if (!initialized && !initializing) load();
   }, [initialized, initializing, load]);
 
-  return (initializing || !initialized) ? (
+  return initializing || !initialized ? (
     <Container>
       <Loader />
     </Container>
   ) : (
-    children
+    <>{children}</>
   );
 };
 
-AppLoader.propTypes = {
-  children: PropTypes.node.isRequired,
-  initializing: PropTypes.bool.isRequired,
-  initialized: PropTypes.bool.isRequired,
-  load: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   initializing: state.user.initializing,
   initialized: state.user.initialized,
 });

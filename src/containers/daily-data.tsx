@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { TextField } from '@material-ui/core';
@@ -8,15 +7,13 @@ import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-import {
-  parse, isSameDay, isToday, subDays, addDays, isValid, isFuture,
-} from 'date-fns';
-import Chart from 'react-apexcharts';
+import { parse, isSameDay, isToday, subDays, addDays, isValid, isFuture } from 'date-fns';
 
 import { format } from '../utils/date';
-import { initType, requestType, dailyDataType } from '../types';
 import * as duck from '../ducks/wind-farm';
 import Loader from '../components/loader';
+import { DailyDataState, InitState, RootState } from '../types';
+import DailyChart from '../components/daily-chart';
 
 const StyledContainer = styled(Container)`
   margin-top: 1rem;
@@ -29,10 +26,10 @@ const Title = styled(Typography)`
 
 const Header = styled.div`
   display: flex;
-  justify-content: center
+  justify-content: center;
 `;
 
-const sumArrays = (arrays) => {
+const sumArrays = (arrays: number[][]) => {
   const nbArrays = arrays.length;
   if (nbArrays > 0 && arrays[0]) {
     return arrays[0].map((value, index) => {
@@ -46,47 +43,13 @@ const sumArrays = (arrays) => {
   return [];
 };
 
-const DailyChart = ({ labels, max, data }) => (
-  <Chart
-    options={{
-      plotOptions: {
-        bar: {
-          horizontal: false,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      xaxis: {
-        categories: labels,
-      },
-      yaxis: {
-        min: 0,
-        max,
-        labels: {
-          formatter: (value) => parseInt(value, 10),
-        },
-      },
-      stroke: {
-        curve: 'smooth',
-      },
-    }}
-    series={[{
-      name: 'Production',
-      data,
-    }]}
-    type="line"
-    height="300px"
-  />
-);
-
-DailyChart.propTypes = {
-  labels: PropTypes.arrayOf(PropTypes.string).isRequired,
-  max: PropTypes.number.isRequired,
-  data: PropTypes.arrayOf(PropTypes.number).isRequired,
+type DailyDataProps = {
+  init: InitState;
+  dailyData: DailyDataState;
+  getDailyData: (day: Date) => void;
 };
 
-const DailyData = ({ init, dailyData, getDailyData }) => {
+const DailyData = ({ init, dailyData, getDailyData }: DailyDataProps) => {
   const [day, setDay] = useState(new Date());
 
   const onPrevious = useCallback(() => setDay(subDays(day, 1)), [day]);
@@ -102,19 +65,22 @@ const DailyData = ({ init, dailyData, getDailyData }) => {
     }
   }, [init.success, getDailyData, day]);
 
-  if (!init.success) return null;
+  if (!init.success || !init.value) return null;
 
+  const { turbinePower } = init.value;
   const lastDay = isToday(day);
   const firstDay = isSameDay(day, init.value.minDate);
 
   return (
     <StyledContainer disableGutters>
       <Header>
-        <IconButton onClick={onPrevious} disabled={firstDay}><ArrowBackIosIcon /></IconButton>
+        <IconButton onClick={onPrevious} disabled={firstDay}>
+          <ArrowBackIosIcon />
+        </IconButton>
         <TextField
-          id="date"
-          label="Date"
-          type="date"
+          id='date'
+          label='Date'
+          type='date'
           value={isValid(day) ? format(day, 'yyyy-MM-dd') : ''}
           inputProps={{
             min: format(init.value.minDate, 'yyyy-MM-dd'),
@@ -125,30 +91,28 @@ const DailyData = ({ init, dailyData, getDailyData }) => {
           }}
           onChange={onDateChange}
         />
-        <IconButton onClick={onNext} disabled={lastDay}><ArrowForwardIosIcon /></IconButton>
+        <IconButton onClick={onNext} disabled={lastDay}>
+          <ArrowForwardIosIcon />
+        </IconButton>
       </Header>
-      {dailyData.onGoing && (<Loader />)}
-      {!isValid(day) && (
-        <Title variant="h4">Sélectionnez une date</Title>
-      )}
-      {dailyData.errors.length > 0 && (
-        <Title variant="h4">Erreur de connexion au parc</Title>
-      )}
-      {dailyData.success && isValid(day) && (
+      {dailyData.onGoing && <Loader />}
+      {!isValid(day) && <Title variant='h4'>Sélectionnez une date</Title>}
+      {dailyData.errors.length > 0 && <Title variant='h4'>Erreur de connexion au parc</Title>}
+      {dailyData.success && isValid(day) && dailyData.value && (
         <>
           <Title>Production moyenne (kW) toutes les 10 min</Title>
           <div>
-            <Typography variant="h4">Parc</Typography>
+            <Typography variant='h4'>Parc</Typography>
             <DailyChart
               labels={dailyData.value[0].labels}
-              max={dailyData.value.length * init.value.turbinePower}
+              max={dailyData.value.length * turbinePower}
               data={sumArrays(dailyData.value.map((turbineData) => turbineData.power))}
             />
           </div>
           {dailyData.value.map((turbineData) => (
             <div key={turbineData.name}>
-              <Typography variant="h5">{turbineData.name}</Typography>
-              <DailyChart labels={turbineData.labels} max={init.value.turbinePower} data={turbineData.power} />
+              <Typography variant='h5'>{turbineData.name}</Typography>
+              <DailyChart labels={turbineData.labels} max={turbinePower} data={turbineData.power} />
             </div>
           ))}
         </>
@@ -157,13 +121,7 @@ const DailyData = ({ init, dailyData, getDailyData }) => {
   );
 };
 
-DailyData.propTypes = {
-  init: requestType(initType).isRequired,
-  dailyData: requestType(dailyDataType).isRequired,
-  getDailyData: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   init: state.windFarm.init,
   dailyData: state.windFarm.dailyData,
 });
