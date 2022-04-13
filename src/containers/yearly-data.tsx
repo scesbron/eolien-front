@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import Typography from '@material-ui/core/Typography';
@@ -18,11 +17,12 @@ import {
   startOfYear,
 } from 'date-fns';
 
-import { Init, InitState, RootState, YearlyDataState } from '../types';
-import * as duck from '../ducks/wind-farm';
 import { format } from '../utils/date';
 import Loader from '../components/loader';
 import YearlyChart from '../components/yearly-chart';
+import useYearlyData from '../queries/use-yearly-data';
+import useConfig from '../queries/use-config';
+import { Config } from '../types';
 
 const StyledContainer = styled(Container)`
   margin-top: 1rem;
@@ -38,7 +38,7 @@ const Title = styled(Typography)`
   padding: 1rem 0;
 `;
 
-const maxValue = (init: Init) => subDays(startOfMonth(init.maxDate), 1);
+const maxValue = (config: Config) => subDays(startOfMonth(config.maxDate), 1);
 
 const sum = (values: number[]) => {
   let acc = 0;
@@ -53,57 +53,49 @@ type Year = {
   endDate: Date;
 };
 
-type YearlyDataProps = {
-  init: InitState;
-  yearlyData: YearlyDataState;
-  getYearlyData: (startDate: Date, endDate: Date) => void;
-};
-
-const YearlyData = ({ init, yearlyData, getYearlyData }: YearlyDataProps) => {
+const YearlyData = () => {
   const [year, setYear] = useState<Year>();
+  const { data: config } = useConfig();
+  const { data: yearlyData, isLoading, error } = useYearlyData(year?.startDate, year?.endDate);
 
   useEffect(() => {
-    if (init.success && init.value) {
-      const endDate = maxValue(init.value);
+    if (config) {
+      const endDate = maxValue(config);
       setYear({
-        startDate: max([init.value.minDate, startOfYear(endDate)]),
+        startDate: max([config.minDate, startOfYear(endDate)]),
         endDate,
       });
     }
-  }, [init]);
-
-  useEffect(() => {
-    if (year) getYearlyData(year.startDate, year.endDate);
-  }, [getYearlyData, year]);
+  }, [config]);
 
   const onPrevious = useCallback(() => {
     setYear((previous) => {
-      if (init.value && previous) {
+      if (config && previous) {
         return {
-          startDate: max([init.value.minDate, subYears(previous.startDate, 1)]),
+          startDate: max([config.minDate, subYears(previous.startDate, 1)]),
           endDate: subDays(previous.startDate, 1),
         };
       }
       return previous;
     });
-  }, [init]);
+  }, [config]);
 
   const onNext = useCallback(() => {
     setYear((previous) => {
-      if (init.value && previous) {
+      if (config && previous) {
         return {
           startDate: addDays(previous.endDate, 1),
-          endDate: min([addYears(previous.endDate, 1), maxValue(init.value)]),
+          endDate: min([addYears(previous.endDate, 1), maxValue(config)]),
         };
       }
       return previous;
     });
-  }, [init]);
+  }, [config]);
 
-  if (!year || !init.value) return null;
+  if (!year || !config) return null;
 
-  const lastYear = isEqual(maxValue(init.value), year.endDate);
-  const firstYear = init.value.minDate.getFullYear() === year.startDate.getFullYear();
+  const lastYear = isEqual(maxValue(config), year.endDate);
+  const firstYear = config.minDate.getFullYear() === year.startDate.getFullYear();
 
   return (
     <StyledContainer disableGutters>
@@ -116,21 +108,21 @@ const YearlyData = ({ init, yearlyData, getYearlyData }: YearlyDataProps) => {
           <ArrowForwardIosIcon />
         </IconButton>
       </Header>
-      {yearlyData.onGoing && <Loader />}
-      {yearlyData.errors.length > 0 && <Title variant='h4'>Erreur de connexion au parc</Title>}
-      {yearlyData.success && yearlyData.value && (
+      {isLoading && <Loader />}
+      {!!error && <Title variant='h4'>Erreur de connexion au parc</Title>}
+      {yearlyData && (
         <>
           <Title variant='h6'>Production par mois (MWh)</Title>
           <YearlyChart
-            labels={yearlyData.value.labels}
-            values={yearlyData.value.values.map((value) => value / 1000)}
-            goals={yearlyData.value.goals.map((value) => value / 1000)}
+            labels={yearlyData.labels}
+            values={yearlyData.values.map((value) => value / 1000)}
+            goals={yearlyData.goals.map((value) => value / 1000)}
           />
           <Title variant='h6'>Cumul de production (MWh)</Title>
           <YearlyChart
-            labels={yearlyData.value.labels}
-            values={sum(yearlyData.value.values)}
-            goals={sum(yearlyData.value.goals)}
+            labels={yearlyData.labels}
+            values={sum(yearlyData.values)}
+            goals={sum(yearlyData.goals)}
           />
         </>
       )}
@@ -138,13 +130,4 @@ const YearlyData = ({ init, yearlyData, getYearlyData }: YearlyDataProps) => {
   );
 };
 
-const mapStateToProps = (state: RootState) => ({
-  init: state.windFarm.init,
-  yearlyData: state.windFarm.yearlyData,
-});
-
-const mapDispatchToProps = {
-  getYearlyData: duck.getYearlyData,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(YearlyData);
+export default YearlyData;

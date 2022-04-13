@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import styled from 'styled-components';
 
-import { InitState, RootState, Status, StatusState } from '../types';
-import * as duck from '../ducks/wind-farm';
+import { Status } from '../types';
 import Loader from '../components/loader';
 import TurbineChart from '../components/turbine-chart';
+import useConfig from '../queries/use-config';
+import useStatus from '../queries/use-status';
 
 const Farm = styled.div`
   display: flex;
@@ -30,33 +30,19 @@ const sum = (array: Status, value: 'instantPower' | 'windSpeed') =>
 const avg = (array: Status, value: 'instantPower' | 'windSpeed') =>
   sum(array, value) / array.length;
 
-type RealTimeDataProps = {
-  init: InitState;
-  status: StatusState;
-  initialize: () => void;
-  getStatus: () => void;
-};
+const RealTimeData = () => {
+  const { data: config } = useConfig();
+  const { data: status, error } = useStatus(config?.sessionId, config?.handle);
 
-const RealTimeData = ({ init, status, initialize, getStatus }: RealTimeDataProps) => {
-  useEffect(() => {
-    if (status.errors.length) {
-      initialize();
-    }
-  }, [status.errors.length, initialize]);
+  if (error) {
+    return (
+      <StyledContainer>
+        <Title variant='h4'>Erreur de connexion au parc</Title>
+      </StyledContainer>
+    );
+  }
 
-  useEffect(() => {
-    let interval: NodeJS.Timer;
-    if (init.success) {
-      getStatus();
-      interval = setInterval(getStatus, 2000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [init.success]);
-
-  if (status.onGoing && !status.value) {
+  if (!status || !config) {
     return (
       <StyledContainer>
         <Title variant='h4'>Chargement des données</Title>
@@ -65,16 +51,7 @@ const RealTimeData = ({ init, status, initialize, getStatus }: RealTimeDataProps
     );
   }
 
-  if (status.errors.length) {
-    return (
-      <StyledContainer>
-        <Title variant='h4'>Erreur de connexion au parc</Title>
-      </StyledContainer>
-    );
-  }
-  if (!status.value || !init.value) return null;
-
-  const { turbinePower } = init.value;
+  const { turbinePower } = config;
 
   return (
     <StyledContainer disableGutters>
@@ -82,13 +59,13 @@ const RealTimeData = ({ init, status, initialize, getStatus }: RealTimeDataProps
       <Farm>
         <TurbineChart
           name='Parc'
-          power={sum(status.value, 'instantPower')}
-          maxPower={turbinePower * status.value.length}
-          windSpeed={avg(status.value, 'windSpeed')}
+          power={sum(status, 'instantPower')}
+          maxPower={turbinePower * status.length}
+          windSpeed={avg(status, 'windSpeed')}
         />
       </Farm>
       <Farm>
-        {status.value.map((turbine) => (
+        {status.map((turbine) => (
           <TurbineChart
             key={turbine.name}
             name={turbine.name}
@@ -101,15 +78,4 @@ const RealTimeData = ({ init, status, initialize, getStatus }: RealTimeDataProps
     </StyledContainer>
   );
 };
-
-const mapStateToProps = (state: RootState) => ({
-  init: state.windFarm.init,
-  status: state.windFarm.status,
-});
-
-const mapDispatchToProps = {
-  initialize: duck.initialize,
-  getStatus: duck.getStatus,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(RealTimeData);
+export default RealTimeData;

@@ -1,19 +1,18 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { connect } from 'react-redux';
 import styled from 'styled-components';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-import { addMonths, subMonths, isSameMonth, subDays } from 'date-fns';
+import { addMonths, subMonths, isSameMonth } from 'date-fns';
 import Chart from 'react-apexcharts';
 
 import { format } from '../utils/date';
-import * as duck from '../ducks/wind-farm';
 import Loader from '../components/loader';
 import { minWidth } from '../styles/mixins';
-import { InitState, MonthlyDataState, RootState } from '../types';
+import useMonthlyData from '../queries/use-monthly-data';
+import useConfig from '../queries/use-config';
 
 const StyledContainer = styled(Container)`
   margin-top: 1rem;
@@ -50,44 +49,42 @@ const Header = styled.div`
   justify-content: space-between;
 `;
 
-type MonthlyDataProps = {
-  init: InitState;
-  monthlyData: MonthlyDataState;
-  getMonthlyData: (day: Date) => void;
-};
-
-const MonthlyData = ({ init, monthlyData, getMonthlyData }: MonthlyDataProps) => {
-  const [month, setMonth] = useState(subDays(new Date(), 1));
-
-  const onPrevious = useCallback(() => setMonth(subMonths(month, 1)), [month]);
-  const onNext = useCallback(() => setMonth(addMonths(month, 1)), [month]);
+const MonthlyData = () => {
+  const [month, setMonth] = useState<Date>();
+  const { data: config } = useConfig();
+  const { data: monthlyData, isLoading, error } = useMonthlyData(month);
 
   useEffect(() => {
-    if (init.success) {
-      getMonthlyData(month);
-    }
-  }, [init.success, getMonthlyData, month]);
+    if (config) setMonth(config.maxDate);
+  }, [config]);
 
-  if (!init.success || !init.value) return null;
+  const onPrevious = useCallback(() => {
+    if (month) setMonth(subMonths(month, 1));
+  }, [month]);
 
-  const lastMonth = isSameMonth(month, init.value.maxDate);
-  const firstMonth = isSameMonth(month, init.value.minDate);
+  const onNext = useCallback(() => {
+    if (month) setMonth(addMonths(month, 1));
+  }, [month]);
 
-  // @ts-ignore
+  if (!config) return null;
+
+  const lastMonth = !month || isSameMonth(month, config.maxDate);
+  const firstMonth = !month || isSameMonth(month, config.minDate);
+
   return (
     <StyledContainer disableGutters>
       <Header>
         <IconButton onClick={onPrevious} disabled={firstMonth}>
           <ArrowBackIosIcon />
         </IconButton>
-        <Typography variant='h4'>{format(month, 'MMMM')}</Typography>
+        <Typography variant='h4'>{month ? format(month, 'MMMM') : ''}</Typography>
         <IconButton onClick={onNext} disabled={lastMonth}>
           <ArrowForwardIosIcon />
         </IconButton>
       </Header>
-      {monthlyData.onGoing && <Loader />}
-      {monthlyData.errors.length > 0 && <Title variant='h4'>Erreur de connexion au parc</Title>}
-      {monthlyData.success && monthlyData.value && (
+      {isLoading && <Loader />}
+      {error && <Title variant='h4'>Erreur de connexion au parc</Title>}
+      {monthlyData && (
         <div>
           <Title>Production jour par jour en kWh</Title>
           <DataContainer>
@@ -107,23 +104,23 @@ const MonthlyData = ({ init, monthlyData, getMonthlyData }: MonthlyDataProps) =>
                     enabled: false,
                   },
                   xaxis: {
-                    categories: monthlyData.value.labels,
+                    categories: monthlyData.labels,
                   },
                   yaxis: {
                     min: 0,
-                    max: init.value.turbinePower * init.value.turbineCount * 24,
+                    max: config.turbinePower * config.turbineCount * 24,
                   },
                 }}
                 series={[
                   {
                     name: 'Production',
                     type: 'bar',
-                    data: monthlyData.value.values,
+                    data: monthlyData.values,
                   },
                   {
-                    name: monthlyData.value.productibles[0].name,
+                    name: monthlyData.productibles[0].name,
                     type: 'line',
-                    data: monthlyData.value.goals,
+                    data: monthlyData.goals,
                   },
                 ]}
                 type='line'
@@ -134,15 +131,15 @@ const MonthlyData = ({ init, monthlyData, getMonthlyData }: MonthlyDataProps) =>
               <ProductionLine>
                 <Title variant='h6'>Production&nbsp;</Title>
                 <Title variant='h6'>{`${Math.round(
-                  monthlyData.value.production / 1000,
+                  monthlyData.production / 1000,
                 )}\u00a0MWh`}</Title>
               </ProductionLine>
-              {monthlyData.value.productibles.map((productible) => (
+              {monthlyData.productibles.map((productible) => (
                 <ProductionLine key={productible.name}>
                   <Title variant='h6'>{`${productible.name}\u00a0`}</Title>
                   <Title variant='h6'>
                     {`${Math.round(
-                      (productible.value * (monthlyData.value?.ratio ?? 1)) / 1000,
+                      (productible.value * (monthlyData?.ratio ?? 1)) / 1000,
                     )}\u00a0MWh`}
                   </Title>
                 </ProductionLine>
@@ -155,13 +152,4 @@ const MonthlyData = ({ init, monthlyData, getMonthlyData }: MonthlyDataProps) =>
   );
 };
 
-const mapStateToProps = (state: RootState) => ({
-  init: state.windFarm.init,
-  monthlyData: state.windFarm.monthlyData,
-});
-
-const mapDispatchToProps = {
-  getMonthlyData: duck.getMonthlyData,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(MonthlyData);
+export default MonthlyData;

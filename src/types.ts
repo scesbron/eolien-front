@@ -29,6 +29,8 @@ export type Init = CommonInit & {
   maxDate: Date;
 };
 
+export type Config = Init;
+
 export type Turbine = {
   name: string;
   instantPower: number | null;

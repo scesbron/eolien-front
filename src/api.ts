@@ -40,10 +40,9 @@ export const windFarm = {
     axios.get(`${API_BASE_URL}/wind_farm/daily_data`, {
       params: { sessionId, day: format(day, DATE_FORMAT) },
     }),
-  yearlyData: (sessionId: string, startDate: Date, endDate: Date) =>
+  yearlyData: (startDate: Date, endDate: Date) =>
     axios.get(`${API_BASE_URL}/wind_farm/yearly_data`, {
       params: {
-        sessionId,
         startDate: format(startDate, DATE_FORMAT),
         endDate: format(endDate, DATE_FORMAT),
       },

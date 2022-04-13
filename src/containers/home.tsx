@@ -1,21 +1,19 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Container from '@material-ui/core/Container';
 import styled from 'styled-components';
 import { useLocation, Link, Switch, Route } from 'react-router-dom';
-import { connect } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
 
 import RealTimeData from './real-time-data';
 import MonthlyData from './monthly-data';
 import YearlyData from './yearly-data';
 import { DAILY_DATA, MONTHLY_DATA, REAL_TIME_DATA, YEARLY_DATA } from '../constants/routes';
-import { InitState, RootState } from '../types';
-import * as duck from '../ducks/wind-farm';
 import Loader from '../components/loader';
 import DailyData from './daily-data';
+import useConfig from '../queries/use-config';
 
 const StyledContainer = styled(Container)`
   text-align: center;
@@ -35,21 +33,11 @@ const a11yProps = (index: number) => ({
   'aria-controls': `simple-tabpanel-${index}`,
 });
 
-type HomeProps = {
-  init: InitState;
-  initialize: () => void;
-};
-
-const Home = ({ init, initialize }: HomeProps) => {
+const Home = () => {
   const location = useLocation();
+  const { isLoading, error } = useConfig();
 
-  useEffect(() => {
-    if (!init.onGoing && !init.errors.length && !init.success) {
-      initialize();
-    }
-  }, [init.onGoing, init.errors.length, init.success, initialize]);
-
-  if (init.onGoing) {
+  if (isLoading) {
     return (
       <StyledContainer>
         <Title variant='h4'>Connexion au parc</Title>
@@ -58,7 +46,7 @@ const Home = ({ init, initialize }: HomeProps) => {
     );
   }
 
-  if (init.errors.length) {
+  if (error) {
     return (
       <StyledContainer>
         <Title variant='h4'>Erreur de connexion au parc</Title>
@@ -124,12 +112,4 @@ const Home = ({ init, initialize }: HomeProps) => {
   );
 };
 
-const mapStateToProps = (state: RootState) => ({
-  init: state.windFarm.init,
-});
-
-const mapDispatchToProps = {
-  initialize: duck.initialize,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default Home;
