@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { format } from 'date-fns';
 
-import { API_BASE_URL } from './config';
-
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const DATE_FORMAT = 'yyyy-MM-dd';
 
 export const user = {
