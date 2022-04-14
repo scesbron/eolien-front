@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 
 import { API_BASE_URL } from './config';
 
-const AUTH_KEY = 'EOLIEN-TOKEN';
 const DATE_FORMAT = 'yyyy-MM-dd';
 
 export const user = {
@@ -47,21 +46,4 @@ export const windFarm = {
         endDate: format(endDate, DATE_FORMAT),
       },
     }),
-};
-
-export const setAuthorization = (authorization?: string, rememberMe?: boolean) => {
-  if (axios.defaults.headers && authorization) {
-    axios.defaults.headers.common.Authorization = authorization;
-  }
-  if (authorization) {
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem(AUTH_KEY, authorization);
-  }
-};
-
-export const initAuthorization = () => {
-  if (axios.defaults.headers) {
-    axios.defaults.headers.common.Authorization =
-      localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY) || '';
-  }
 };

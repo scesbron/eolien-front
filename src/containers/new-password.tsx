@@ -1,18 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { TextField } from 'mui-rff';
 import { Form } from 'react-final-form';
 import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
-import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { green } from '@material-ui/core/colors';
 
-import * as duck from '../ducks/user';
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
-import { RootState } from '../types';
+import useUpdatePassword from '../queries/user/use-update-password';
+import { getErrors } from '../queries/utils';
 
 const useStyles = makeStyles({
   container: {
@@ -68,42 +67,23 @@ const validate = (values: ValidateValues) => {
   return errors;
 };
 
-type NewPasswordProps = {
-  updating: boolean;
-  updated: boolean;
-  errors: string[];
-  updatePassword: (token: string | null, password: string, confirmation: string) => void;
-  setErrors: () => void;
-};
-
-const NewPassword = ({
-  updating,
-  updated,
-  errors,
-  updatePassword,
-  setErrors,
-}: NewPasswordProps) => {
+const NewPassword = () => {
   const classes = useStyles();
   const history = useHistory();
   const query = useQuery();
-  const [submitted, setSubmitted] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const buttonClass = success ? classes.buttonSuccess : classes.button;
+  const { isSuccess, isLoading, error, mutate: updatePassword } = useUpdatePassword();
+
+  const buttonClass = isSuccess ? classes.buttonSuccess : classes.button;
 
   useEffect(() => {
-    setErrors();
-  }, [setErrors]);
-  useEffect(() => {
-    if (submitted && updated) {
-      setSuccess(true);
+    if (isSuccess) {
       setTimeout(() => history.push(LOGIN), 1000);
     }
-  }, [history, submitted, updated]);
+  }, [history, isSuccess]);
 
   const onSubmit = useCallback(
-    (values) => {
-      setSubmitted(true);
-      updatePassword(query.get('token'), values.password, values.confirmation);
+    ({ password, confirmation }) => {
+      updatePassword({ token: query.get('token'), password, confirmation });
     },
     [updatePassword, query],
   );
@@ -121,9 +101,9 @@ const NewPassword = ({
             <div className={classes.intro}>
               <Typography variant='h4'>Changez votre mot de passe</Typography>
             </div>
-            {errors.length > 0 && (
+            {!!error && (
               <Alert variant='filled' severity='error'>
-                {errors.join('\n')}
+                {getErrors(error).join('\n')}
               </Alert>
             )}
             <TextField label='Nouveau mot de passe' type='password' name='password' />
@@ -133,9 +113,9 @@ const NewPassword = ({
               variant='contained'
               color='primary'
               className={buttonClass}
-              disabled={updating}
+              disabled={isLoading}
             >
-              {success ? 'Mot de passe modifié' : 'Changer mon mot de passe'}
+              {isSuccess ? 'Mot de passe modifié' : 'Changer mon mot de passe'}
             </Button>
           </form>
         )}
@@ -144,15 +124,4 @@ const NewPassword = ({
   );
 };
 
-const mapStateToProps = (state: RootState) => ({
-  updating: state.user.passwordUpdating,
-  updated: state.user.passwordUpdated,
-  errors: state.user.errors,
-});
-
-const mapDispatchToProps = {
-  updatePassword: duck.updatePassword,
-  setErrors: duck.setErrors,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(NewPassword);
+export default NewPassword;

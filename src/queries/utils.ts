@@ -5,5 +5,5 @@ export const getErrors = (error: any) => {
   if ('message' in error) {
     return [error.message];
   }
-  return [];
+  return ['Une erreur est survenue'];
 };

@@ -1,16 +1,14 @@
-import React, { useCallback, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Checkboxes, TextField } from 'mui-rff';
 import { Form } from 'react-final-form';
 import { Alert } from '@material-ui/lab';
 import Link from '@material-ui/core/Link';
-import { connect } from 'react-redux';
-import { useHistory, useLocation, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 
-import * as duck from '../ducks/user';
-import { CustomLocation, RootState, User } from '../types';
 import { FORGOTTEN_PASSWORD } from '../constants/routes';
+import useAuth from '../hooks/use-auth';
 
 const useStyles = makeStyles({
   container: {
@@ -36,40 +34,13 @@ const useStyles = makeStyles({
   },
 });
 
-type LoginProps = {
-  user?: User;
-  loading: boolean;
-  errors: string[];
-  login: (username: string, password: string, rememberMe?: boolean) => void;
-  setErrors: () => void;
-};
-
-const Login = ({ user, loading, errors, login, setErrors }: LoginProps) => {
+const Login = () => {
   const classes = useStyles();
-  const history = useHistory();
-  const location = useLocation();
-
-  useEffect(() => {
-    setErrors();
-  }, [setErrors]);
-
-  useEffect(() => {
-    if (user) {
-      const from = (location as CustomLocation).state.from || { pathname: '/' };
-      history.replace(from);
-    }
-  }, [user, history, location]);
-
-  const onSubmit = useCallback(
-    (values) => {
-      login(values.username, values.password, values.rememberMe);
-    },
-    [login],
-  );
+  const { login, isLoading, errors } = useAuth();
 
   return (
     <div className={classes.container}>
-      <Form onSubmit={onSubmit}>
+      <Form onSubmit={login}>
         {({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className={classes.form}>
             <img
@@ -94,7 +65,7 @@ const Login = ({ user, loading, errors, login, setErrors }: LoginProps) => {
               variant='contained'
               color='primary'
               className={classes.button}
-              disabled={loading}
+              disabled={isLoading}
             >
               Connexion
             </Button>
@@ -107,16 +78,4 @@ const Login = ({ user, loading, errors, login, setErrors }: LoginProps) => {
     </div>
   );
 };
-
-const mapStateToProps = (state: RootState) => ({
-  user: state.user.current,
-  loading: state.user.loading,
-  errors: state.user.errors,
-});
-
-const mapDispatchToProps = {
-  login: duck.login,
-  setErrors: duck.setErrors,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default Login;

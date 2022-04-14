@@ -1,19 +1,18 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { TextField } from 'mui-rff';
 import { Form } from 'react-final-form';
 import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
-import { connect } from 'react-redux';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import Link from '@material-ui/core/Link';
 import { green } from '@material-ui/core/colors';
 
-import * as duck from '../ducks/user';
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
-import { RootState } from '../types';
+import useCreatePassword from '../queries/user/use-create-password';
+import { getErrors } from '../queries/utils';
 
 const useStyles = makeStyles({
   container: {
@@ -50,45 +49,25 @@ const useStyles = makeStyles({
   },
 });
 
-type ForgottenPasswordProps = {
-  asking: boolean;
-  asked: boolean;
-  errors: string[];
-  forgottenPassword: (username: string) => void;
-  setErrors: () => void;
-};
-
-const ForgottenPassword = ({
-  asking,
-  asked,
-  errors,
-  forgottenPassword,
-  setErrors,
-}: ForgottenPasswordProps) => {
+const ForgottenPassword = () => {
   const classes = useStyles();
   const history = useHistory();
   const query = useQuery();
-  const [submitted, setSubmitted] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const buttonClass = success ? classes.buttonSuccess : classes.button;
+  const { isSuccess, isLoading, error, mutate: createPassword } = useCreatePassword();
+
+  const buttonClass = isSuccess ? classes.buttonSuccess : classes.button;
 
   useEffect(() => {
-    setErrors();
-  }, [setErrors]);
-
-  useEffect(() => {
-    if (submitted && asked) {
-      setSuccess(true);
+    if (isSuccess) {
       setTimeout(() => history.push(LOGIN), 1000);
     }
-  }, [history, asked, submitted]);
+  }, [history, isSuccess]);
 
   const onSubmit = useCallback(
-    (values) => {
-      setSubmitted(true);
-      forgottenPassword(values.username);
+    ({ username }) => {
+      createPassword({ username });
     },
-    [forgottenPassword],
+    [createPassword],
   );
 
   return (
@@ -108,9 +87,9 @@ const ForgottenPassword = ({
                 réinitialiser votre mot de passe.
               </Typography>
             </div>
-            {errors.length > 0 && (
+            {!!error && (
               <Alert variant='filled' severity='error'>
-                {errors.join('\n')}
+                {getErrors(error).join('\n')}
               </Alert>
             )}
             <TextField label="Nom d'utilisateur" name='username' required />
@@ -119,9 +98,9 @@ const ForgottenPassword = ({
               variant='contained'
               color='primary'
               className={buttonClass}
-              disabled={asking}
+              disabled={isLoading}
             >
-              {success ? 'Email de réinitialisation envoyé' : 'Envoyer'}
+              {isSuccess ? 'Email de réinitialisation envoyé' : 'Envoyer'}
             </Button>
             <Link component={RouterLink} to={LOGIN} className={classes.link}>
               Connexion
@@ -132,16 +111,4 @@ const ForgottenPassword = ({
     </div>
   );
 };
-
-const mapStateToProps = (state: RootState) => ({
-  asking: state.user.forgottenPasswordAsking,
-  asked: state.user.forgottenPasswordAsked,
-  errors: state.user.errors,
-});
-
-const mapDispatchToProps = {
-  forgottenPassword: duck.forgottenPassword,
-  setErrors: duck.setErrors,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ForgottenPassword);
+export default ForgottenPassword;

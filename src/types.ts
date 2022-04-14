@@ -111,7 +111,7 @@ export type ResponseGenerator = {
 };
 
 export type CustomLocation = {
-  state: {
+  state?: {
     from?: Location;
   };
 };
