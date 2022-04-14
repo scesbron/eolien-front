@@ -1,7 +1,8 @@
 import { useMutation } from 'react-query';
 import { password } from '../../api';
+import { CreatePasswordProps } from '../../types';
 
-const createPassword = async ({ username }: { username: string }) => {
+const createPassword = async ({ username }: CreatePasswordProps) => {
   await password.create(username);
 };
 

@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect } from 'react';
-import { Button } from '@material-ui/core';
+import { Button, TextField } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { TextField } from 'mui-rff';
-import { Form } from 'react-final-form';
 import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
 import { green } from '@material-ui/core/colors';
 import { useNavigate } from 'react-router-dom';
+import { Controller, useForm } from 'react-hook-form';
 
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
 import useUpdatePassword from '../queries/user/use-update-password';
 import { getErrors } from '../queries/utils';
+import { UpdatePasswordProps } from '../types';
 
 const useStyles = makeStyles({
   container: {
@@ -48,30 +48,22 @@ const useStyles = makeStyles({
   },
 });
 
-type ValidateValues = {
-  password?: string;
-  confirmation?: string;
-};
-
-const validate = (values: ValidateValues) => {
-  const errors: Partial<ValidateValues> = {};
-  if (!values.password) {
-    errors.password = 'Le nouveau mot de passe est obligatoire';
-  }
-  if (!values.confirmation) {
-    errors.confirmation = 'La confirmation du mot de passe est obligatoire';
-  }
-  if (values.password && values.confirmation && values.password !== values.confirmation) {
-    errors.confirmation = 'Les deux mots de passe doivent être identiques';
-  }
-  return errors;
-};
-
 const NewPassword = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const query = useQuery();
   const { isSuccess, isLoading, error, mutate: updatePassword } = useUpdatePassword();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+  } = useForm<UpdatePasswordProps>({
+    defaultValues: {
+      password: '',
+      confirmation: '',
+    },
+  });
 
   const buttonClass = isSuccess ? classes.buttonSuccess : classes.button;
 
@@ -82,7 +74,7 @@ const NewPassword = () => {
   }, [navigate, isSuccess]);
 
   const onSubmit = useCallback(
-    ({ password, confirmation }: { password: string; confirmation: string }) => {
+    ({ password, confirmation }: UpdatePasswordProps) => {
       updatePassword({ token: query.get('token'), password, confirmation });
     },
     [updatePassword, query],
@@ -90,36 +82,68 @@ const NewPassword = () => {
 
   return (
     <div className={classes.container}>
-      <Form onSubmit={onSubmit} validate={validate}>
-        {({ handleSubmit }) => (
-          <form onSubmit={handleSubmit} className={classes.form}>
-            <img
-              src={`${process.env.PUBLIC_URL}/images/logo.png`}
-              alt='Logo'
-              className={classes.logo}
-            />
-            <div className={classes.intro}>
-              <Typography variant='h4'>Changez votre mot de passe</Typography>
-            </div>
-            {!!error && (
-              <Alert variant='filled' severity='error'>
-                {getErrors(error).join('\n')}
-              </Alert>
-            )}
-            <TextField label='Nouveau mot de passe' type='password' name='password' />
-            <TextField label='Confirmez votre mot de passe' type='password' name='confirmation' />
-            <Button
-              type='submit'
-              variant='contained'
-              color='primary'
-              className={buttonClass}
-              disabled={isLoading}
-            >
-              {isSuccess ? 'Mot de passe modifié' : 'Changer mon mot de passe'}
-            </Button>
-          </form>
+      <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
+        <img
+          src={`${process.env.PUBLIC_URL}/images/logo.png`}
+          alt='Logo'
+          className={classes.logo}
+        />
+        <div className={classes.intro}>
+          <Typography variant='h4'>Changez votre mot de passe</Typography>
+        </div>
+        {!!error && (
+          <Alert variant='filled' severity='error'>
+            {getErrors(error).join('\n')}
+          </Alert>
         )}
-      </Form>
+        <Controller
+          name='password'
+          control={control}
+          rules={{
+            required: 'Le nouveau mot de passe est obligatoire',
+          }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label='Nouveau mot de passe'
+              type='password'
+              error={!!errors.password}
+              helperText={errors.password?.message}
+            />
+          )}
+        />
+        <Controller
+          name='confirmation'
+          control={control}
+          rules={{
+            required: 'La confirmation du mot de passe est obligatoire',
+            validate: {
+              matchesPreviousPassword: (value) => {
+                const { password } = getValues();
+                return password === value || 'Les deux mots de passe doivent être identiques';
+              },
+            },
+          }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label='Confirmez votre mot de passe'
+              type='password'
+              error={!!errors.confirmation}
+              helperText={errors.confirmation?.message}
+            />
+          )}
+        />
+        <Button
+          type='submit'
+          variant='contained'
+          color='primary'
+          className={buttonClass}
+          disabled={isLoading}
+        >
+          {isSuccess ? 'Mot de passe modifié' : 'Changer mon mot de passe'}
+        </Button>
+      </form>
     </div>
   );
 };

@@ -1,10 +1,9 @@
 import { useMutation } from 'react-query';
 import { password as passwordApi } from '../../api';
+import { UpdatePasswordProps } from '../../types';
 
-type PasswordParams = {
+type PasswordParams = UpdatePasswordProps & {
   token: string | null;
-  password: string;
-  confirmation: string;
 };
 
 const updatePassword = async ({ token, password, confirmation }: PasswordParams) => {

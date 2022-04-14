@@ -115,3 +115,18 @@ export type CustomLocation = {
     from?: Location;
   };
 };
+
+export type LoginProps = {
+  username: string;
+  password: string;
+  rememberMe: boolean;
+};
+
+export type CreatePasswordProps = {
+  username: string;
+};
+
+export type UpdatePasswordProps = {
+  password: string;
+  confirmation: string;
+};

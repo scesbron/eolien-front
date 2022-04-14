@@ -10,17 +10,11 @@ import React, {
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-import { CustomLocation, User } from '../types';
+import { CustomLocation, LoginProps, User } from '../types';
 import { user as userApi, session } from '../api';
 import { getErrors } from '../queries/utils';
 
 const AUTH_KEY = 'EOLIEN-TOKEN';
-
-type LoginProps = {
-  username: string;
-  password: string;
-  rememberMe: boolean;
-};
 
 type AuthContextType = {
   user?: User;
