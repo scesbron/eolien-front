@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, ChangeEvent } from 'react';
 import styled from 'styled-components';
 import { TextField } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
@@ -49,7 +49,7 @@ const DailyData = () => {
 
   const onPrevious = useCallback(() => setDay(subDays(day, 1)), [day]);
   const onNext = useCallback(() => setDay(addDays(day, 1)), [day]);
-  const onDateChange = useCallback((event) => {
+  const onDateChange = useCallback((event: ChangeEvent<{ value: string }>) => {
     const newDay = parse(event.target.value, 'yyyy-MM-dd', new Date());
     setDay(isFuture(newDay) ? new Date() : newDay);
   }, []);

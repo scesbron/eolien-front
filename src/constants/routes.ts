@@ -1,4 +1,4 @@
-export const FORGOTTEN_PASSWORD = '/mot-de-passe/oublié';
+export const FORGOTTEN_PASSWORD = '/mot-de-passe/oubli';
 export const NEW_PASSWORD = '/mot-de-passe/nouveau';
 export const LOGIN = '/connexion';
 export const REAL_TIME_DATA = '/';

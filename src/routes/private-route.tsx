@@ -1,22 +1,17 @@
-import React, { PropsWithChildren } from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import React from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { LOGIN } from '../constants/routes';
 import useAuth from '../hooks/use-auth';
 
-type PrivateRouteProps = PropsWithChildren<{
-  path: string;
-}>;
-
-const PrivateRoute = ({ children, path }: PrivateRouteProps) => {
+const PrivateRoute = () => {
   const { user } = useAuth();
-  return (
-    <Route
-      path={path}
-      render={({ location }) =>
-        user ? children : <Redirect to={{ pathname: LOGIN, state: { from: location } }} />
-      }
-    />
-  );
+  const location = useLocation();
+
+  if (!user) {
+    return <Navigate to={LOGIN} state={{ from: location }} />;
+  }
+
+  return <Outlet />;
 };
 
 export default PrivateRoute;

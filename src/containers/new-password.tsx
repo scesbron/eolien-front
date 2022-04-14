@@ -5,8 +5,8 @@ import { TextField } from 'mui-rff';
 import { Form } from 'react-final-form';
 import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
-import { useHistory } from 'react-router-dom';
 import { green } from '@material-ui/core/colors';
+import { useNavigate } from 'react-router-dom';
 
 import { LOGIN } from '../constants/routes';
 import { useQuery } from '../routes/utils';
@@ -69,7 +69,7 @@ const validate = (values: ValidateValues) => {
 
 const NewPassword = () => {
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const query = useQuery();
   const { isSuccess, isLoading, error, mutate: updatePassword } = useUpdatePassword();
 
@@ -77,12 +77,12 @@ const NewPassword = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      setTimeout(() => history.push(LOGIN), 1000);
+      setTimeout(() => navigate(LOGIN), 1000);
     }
-  }, [history, isSuccess]);
+  }, [navigate, isSuccess]);
 
   const onSubmit = useCallback(
-    ({ password, confirmation }) => {
+    ({ password, confirmation }: { password: string; confirmation: string }) => {
       updatePassword({ token: query.get('token'), password, confirmation });
     },
     [updatePassword, query],

@@ -4,7 +4,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Container from '@material-ui/core/Container';
 import styled from 'styled-components';
-import { useLocation, Link, Switch, Route } from 'react-router-dom';
+import { useLocation, Link, Route, Routes } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 
 import RealTimeData from './real-time-data';
@@ -94,20 +94,12 @@ const Home = () => {
           />
         </Tabs>
       </StyledBar>
-      <Switch>
-        <Route path={DAILY_DATA}>
-          <DailyData />
-        </Route>
-        <Route path={MONTHLY_DATA}>
-          <MonthlyData />
-        </Route>
-        <Route path={YEARLY_DATA}>
-          <YearlyData />
-        </Route>
-        <Route path={REAL_TIME_DATA}>
-          <RealTimeData />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route path={DAILY_DATA} element={<DailyData />} />
+        <Route path={MONTHLY_DATA} element={<MonthlyData />} />
+        <Route path={YEARLY_DATA} element={<YearlyData />} />
+        <Route path={REAL_TIME_DATA} element={<RealTimeData />} />
+      </Routes>
     </StyledContainer>
   );
 };

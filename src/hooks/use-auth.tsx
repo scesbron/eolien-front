@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import { CustomLocation, User } from '../types';
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: PropsWithChildren<{}>) => {
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   // If we change page, reset the error state.
@@ -84,11 +84,11 @@ export const AuthProvider = ({ children }: PropsWithChildren<{}>) => {
 
   const onAuthentication = useCallback(() => {
     const from = (location as CustomLocation).state?.from || { pathname: '/' };
-    history.replace(from);
-  }, [history, location]);
+    navigate(from, { replace: true });
+  }, [navigate, location]);
 
   const login = useCallback(
-    async ({ username, password, rememberMe }) => {
+    async ({ username, password, rememberMe }: LoginProps) => {
       setIsLoading(true);
       try {
         const response = await session.create(username, password);

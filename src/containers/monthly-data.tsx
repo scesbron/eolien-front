@@ -73,82 +73,84 @@ const MonthlyData = () => {
 
   return (
     <StyledContainer disableGutters>
-      <Header>
-        <IconButton onClick={onPrevious} disabled={firstMonth}>
-          <ArrowBackIosIcon />
-        </IconButton>
-        <Typography variant='h4'>{month ? format(month, 'MMMM') : ''}</Typography>
-        <IconButton onClick={onNext} disabled={lastMonth}>
-          <ArrowForwardIosIcon />
-        </IconButton>
-      </Header>
-      {isLoading && <Loader />}
-      {error && <Title variant='h4'>Erreur de connexion au parc</Title>}
-      {monthlyData && (
-        <div>
-          <Title>Production jour par jour en kWh</Title>
-          <DataContainer>
-            <ChartContainer>
-              <Chart
-                options={{
-                  stroke: {
-                    width: [0, 2],
-                    curve: 'smooth',
-                  },
-                  plotOptions: {
-                    bar: {
-                      horizontal: false,
+      <>
+        <Header>
+          <IconButton onClick={onPrevious} disabled={firstMonth}>
+            <ArrowBackIosIcon />
+          </IconButton>
+          <Typography variant='h4'>{month ? format(month, 'MMMM') : ''}</Typography>
+          <IconButton onClick={onNext} disabled={lastMonth}>
+            <ArrowForwardIosIcon />
+          </IconButton>
+        </Header>
+        {isLoading && <Loader />}
+        {error && <Title variant='h4'>Erreur de connexion au parc</Title>}
+        {monthlyData && (
+          <div>
+            <Title>Production jour par jour en kWh</Title>
+            <DataContainer>
+              <ChartContainer>
+                <Chart
+                  options={{
+                    stroke: {
+                      width: [0, 2],
+                      curve: 'smooth',
                     },
-                  },
-                  dataLabels: {
-                    enabled: false,
-                  },
-                  xaxis: {
-                    categories: monthlyData.labels,
-                  },
-                  yaxis: {
-                    min: 0,
-                    max: (config.turbinePower * config.turbineCount * 24) / 1000,
-                    decimalsInFloat: 0,
-                  },
-                }}
-                series={[
-                  {
-                    name: 'Production',
-                    type: 'bar',
-                    data: monthlyData.values.map((value) => value / 1000),
-                  },
-                  {
-                    name: monthlyData.productibles[0].name,
-                    type: 'line',
-                    data: monthlyData.goals.map((value) => value / 1000),
-                  },
-                ]}
-                type='line'
-              />
-            </ChartContainer>
-            <Production>
-              <Title variant='h5'>Pour le mois</Title>
-              <ProductionLine>
-                <Title variant='h6'>Production&nbsp;</Title>
-                <Title variant='h6'>{`${Math.round(
-                  monthlyData.production / 1000,
-                )}\u00a0MWh`}</Title>
-              </ProductionLine>
-              {monthlyData.productibles.map((productible) => (
-                <ProductionLine key={productible.name}>
-                  <Title variant='h6'>{`${productible.name}\u00a0`}</Title>
-                  <Title variant='h6'>
-                    {`${Math.round(
-                      (productible.value * (monthlyData?.ratio ?? 1)) / 1000,
-                    )}\u00a0MWh`}
-                  </Title>
+                    plotOptions: {
+                      bar: {
+                        horizontal: false,
+                      },
+                    },
+                    dataLabels: {
+                      enabled: false,
+                    },
+                    xaxis: {
+                      categories: monthlyData.labels,
+                    },
+                    yaxis: {
+                      min: 0,
+                      max: (config.turbinePower * config.turbineCount * 24) / 1000,
+                      decimalsInFloat: 0,
+                    },
+                  }}
+                  series={[
+                    {
+                      name: 'Production',
+                      type: 'bar',
+                      data: monthlyData.values.map((value) => value / 1000),
+                    },
+                    {
+                      name: monthlyData.productibles[0].name,
+                      type: 'line',
+                      data: monthlyData.goals.map((value) => value / 1000),
+                    },
+                  ]}
+                  type='line'
+                />
+              </ChartContainer>
+              <Production>
+                <Title variant='h5'>Pour le mois</Title>
+                <ProductionLine>
+                  <Title variant='h6'>Production&nbsp;</Title>
+                  <Title variant='h6'>{`${Math.round(
+                    monthlyData.production / 1000,
+                  )}\u00a0MWh`}</Title>
                 </ProductionLine>
-              ))}
-            </Production>
-          </DataContainer>
-        </div>
-      )}
+                {monthlyData.productibles.map((productible) => (
+                  <ProductionLine key={productible.name}>
+                    <Title variant='h6'>{`${productible.name}\u00a0`}</Title>
+                    <Title variant='h6'>
+                      {`${Math.round(
+                        (productible.value * (monthlyData?.ratio ?? 1)) / 1000,
+                      )}\u00a0MWh`}
+                    </Title>
+                  </ProductionLine>
+                ))}
+              </Production>
+            </DataContainer>
+          </div>
+        )}
+      </>
     </StyledContainer>
   );
 };

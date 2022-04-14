@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
+import React, { ChangeEvent, useCallback } from 'react';
+import { Route, useLocation, Routes, useNavigate } from 'react-router-dom';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import BarChartIcon from '@material-ui/icons/BarChart';
@@ -41,37 +41,31 @@ const pathFromValue = (value: string) =>
 
 const App = () => {
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuth();
 
   const navigateTo = useCallback(
-    (event, newValue) => {
+    (event: ChangeEvent<{}>, newValue: string) => {
       if (newValue === 'logout') {
         logout();
       } else {
-        history.push(pathFromValue(newValue));
+        navigate(pathFromValue(newValue));
       }
     },
-    [history, logout],
+    [navigate, logout],
   );
 
   return (
     <div className={classes.container}>
-      <Switch>
-        <Route path={LOGIN}>
-          <Login />
+      <Routes>
+        <Route path={LOGIN} element={<Login />} />
+        <Route path={FORGOTTEN_PASSWORD} element={<ForgottenPassword />} />
+        <Route path={NEW_PASSWORD} element={<NewPassword />} />
+        <Route element={<PrivateRoute />}>
+          <Route path='/*' element={<Home />} />
         </Route>
-        <Route path={FORGOTTEN_PASSWORD}>
-          <ForgottenPassword />
-        </Route>
-        <Route path={NEW_PASSWORD}>
-          <NewPassword />
-        </Route>
-        <PrivateRoute path='/'>
-          <Home />
-        </PrivateRoute>
-      </Switch>
+      </Routes>
       {user && (
         <BottomNavigation
           value={valueFromPath(location.pathname)}

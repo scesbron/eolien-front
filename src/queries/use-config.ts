@@ -15,7 +15,7 @@ const transformDates = (data: ApiInit): Config => ({
 });
 
 const useConfig = () =>
-  useQuery('config', getConfig, {
+  useQuery(['config'], getConfig, {
     select: transformDates,
     refetchOnMount: true,
     refetchOnWindowFocus: true,

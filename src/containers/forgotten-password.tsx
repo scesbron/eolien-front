@@ -5,7 +5,7 @@ import { TextField } from 'mui-rff';
 import { Form } from 'react-final-form';
 import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Link from '@material-ui/core/Link';
 import { green } from '@material-ui/core/colors';
 
@@ -51,7 +51,7 @@ const useStyles = makeStyles({
 
 const ForgottenPassword = () => {
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const query = useQuery();
   const { isSuccess, isLoading, error, mutate: createPassword } = useCreatePassword();
 
@@ -59,12 +59,12 @@ const ForgottenPassword = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      setTimeout(() => history.push(LOGIN), 1000);
+      setTimeout(() => navigate(LOGIN), 1000);
     }
-  }, [history, isSuccess]);
+  }, [navigate, isSuccess]);
 
   const onSubmit = useCallback(
-    ({ username }) => {
+    ({ username }: { username: string }) => {
       createPassword({ username });
     },
     [createPassword],
