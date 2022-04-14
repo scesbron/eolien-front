@@ -1,6 +1,7 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import { Divider } from '@material-ui/core';
 import styled from 'styled-components';
 
 import { Status } from '../types';
@@ -12,7 +13,7 @@ import useStatus from '../queries/use-status';
 const Farm = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
   flex-wrap: wrap;
 `;
 
@@ -23,6 +24,10 @@ const StyledContainer = styled(Container)`
 
 const Title = styled(Typography)`
   padding: 1rem 0;
+`;
+
+const StyledDivider = styled(Divider)`
+  margin: 20px;
 `;
 
 const sum = (array: Status, value: 'instantPower' | 'windSpeed') =>
@@ -62,8 +67,10 @@ const RealTimeData = () => {
           power={sum(status, 'instantPower')}
           maxPower={turbinePower * status.length}
           windSpeed={avg(status, 'windSpeed')}
+          width={350}
         />
       </Farm>
+      <StyledDivider />
       <Farm>
         {status.map((turbine) => (
           <TurbineChart

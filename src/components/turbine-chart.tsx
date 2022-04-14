@@ -3,28 +3,33 @@ import Typography from '@material-ui/core/Typography';
 import React from 'react';
 import styled from 'styled-components';
 
-type TurbineProps = {
-  name: string;
-  power: number;
-  windSpeed: number;
-  maxPower: number;
-};
-
-const StyledTurbine = styled.div`
-  width: 250px;
+const StyledTurbine = styled.div<{
+  $width: number;
+}>`
+  width: ${({ $width }) => `${$width}px`};
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
-const ChartContainer = styled.div`
-  width: 250px;
-  height: 170px;
+const ChartContainer = styled.div<{
+  $width: number;
+}>`
+  width: ${({ $width }) => `${$width}px`};
+  height: ${({ $width }) => `${($width / 250) * 170}px`};
 `;
 
-const TurbineChart = ({ name, power, windSpeed, maxPower }: TurbineProps) => (
-  <StyledTurbine key={name}>
-    <ChartContainer>
+type TurbineProps = {
+  name: string;
+  power: number;
+  windSpeed: number;
+  maxPower: number;
+  width?: number;
+};
+
+const TurbineChart = ({ name, power, windSpeed, maxPower, width = 250 }: TurbineProps) => (
+  <StyledTurbine key={name} $width={width}>
+    <ChartContainer $width={width}>
       <Chart
         options={{
           plotOptions: {
@@ -60,7 +65,7 @@ const TurbineChart = ({ name, power, windSpeed, maxPower }: TurbineProps) => (
         }}
         series={[(power / maxPower) * 100]}
         type='radialBar'
-        width='250'
+        width={width}
       />
     </ChartContainer>
     <Typography>{`Vent : ${windSpeed ? windSpeed.toFixed(2) : '?'} m/s`}</Typography>

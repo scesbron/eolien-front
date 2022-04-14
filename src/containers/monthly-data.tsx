@@ -108,19 +108,20 @@ const MonthlyData = () => {
                   },
                   yaxis: {
                     min: 0,
-                    max: config.turbinePower * config.turbineCount * 24,
+                    max: (config.turbinePower * config.turbineCount * 24) / 1000,
+                    decimalsInFloat: 0,
                   },
                 }}
                 series={[
                   {
                     name: 'Production',
                     type: 'bar',
-                    data: monthlyData.values,
+                    data: monthlyData.values.map((value) => value / 1000),
                   },
                   {
                     name: monthlyData.productibles[0].name,
                     type: 'line',
-                    data: monthlyData.goals,
+                    data: monthlyData.goals.map((value) => value / 1000),
                   },
                 ]}
                 type='line'
