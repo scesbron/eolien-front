@@ -7,12 +7,12 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { makeStyles } from '@material-ui/core/styles';
 
 import PrivateRoute from './routes/private-route';
-import Login from './containers/login';
-import Home from './containers/home';
-import ForgottenPassword from './containers/forgotten-password';
+import Login from './screens/login';
+import Home from './screens/home';
+import ForgottenPassword from './screens/forgotten-password';
 import { FORGOTTEN_PASSWORD, LOGIN, NEW_PASSWORD } from './constants/routes';
-import NewPassword from './containers/new-password';
-import useAuth from './hooks/use-auth';
+import NewPassword from './screens/new-password';
+import useAuth from './containers/auth';
 
 const navigationRoutes = [
   { path: '/', value: 'home' },

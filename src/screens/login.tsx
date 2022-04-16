@@ -7,7 +7,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 
 import { FORGOTTEN_PASSWORD } from '../constants/routes';
-import useAuth from '../hooks/use-auth';
+import useAuth from '../containers/auth';
 import { LoginProps } from '../types';
 
 const useStyles = makeStyles({

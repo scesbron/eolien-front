@@ -53,11 +53,14 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-export const AuthProvider = ({ children }: PropsWithChildren<{}>) => {
+export const AuthProvider = ({
+  initialize = true,
+  children,
+}: PropsWithChildren<{ initialize: boolean }>) => {
   const [user, setUser] = useState<User>();
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(!initialize);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,12 +71,15 @@ export const AuthProvider = ({ children }: PropsWithChildren<{}>) => {
   }, [location.pathname]);
 
   useEffect(() => {
-    initAuthorization();
-    userApi
-      .get()
-      .then((response) => setUser(response.data))
-      .catch(() => {})
-      .finally(() => setIsInitialized(true));
+    if (initialize) {
+      initAuthorization();
+      userApi
+        .get()
+        .then((response) => setUser(response.data))
+        .catch(() => {})
+        .finally(() => setIsInitialized(true));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onAuthentication = useCallback(() => {
