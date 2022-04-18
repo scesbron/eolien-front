@@ -83,7 +83,7 @@ export const AuthProvider = ({
   }, []);
 
   const onAuthentication = useCallback(() => {
-    const from = (location as CustomLocation).state?.from || { pathname: '/' };
+    const from = (location as CustomLocation).state?.from || '/';
     navigate(from, { replace: true });
   }, [navigate, location]);
 
@@ -96,7 +96,8 @@ export const AuthProvider = ({
         setUser(response.data);
         onAuthentication();
       } catch (error) {
-        setErrors(getErrors(error));
+        const value = getErrors(error);
+        setErrors(value);
       } finally {
         setIsLoading(false);
       }

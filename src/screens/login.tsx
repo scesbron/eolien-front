@@ -71,6 +71,7 @@ const Login = () => {
           render={({ field }) => (
             <TextField
               {...field}
+              id='username'
               label="Nom d'utilisateur"
               error={!!errors.username}
               helperText={errors.username?.message}
@@ -86,6 +87,7 @@ const Login = () => {
           render={({ field }) => (
             <TextField
               {...field}
+              id='password'
               label='Mot de passe'
               type='password'
               error={!!errors.password}
