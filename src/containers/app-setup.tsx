@@ -4,7 +4,13 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 
 import { AuthProvider } from './auth';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppSetup = ({ initialize = true, children }: PropsWithChildren<{ initialize?: boolean }>) => (
   <React.StrictMode>
