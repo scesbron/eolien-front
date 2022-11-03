@@ -76,7 +76,7 @@ export const AuthProvider = ({
       userApi
         .get()
         .then((response) => setUser(response.data))
-        .catch(() => {})
+        .catch(() => setAuthorization())
         .finally(() => setIsInitialized(true));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,6 +98,7 @@ export const AuthProvider = ({
       } catch (error) {
         const value = getErrors(error);
         setErrors(value);
+        setAuthorization();
       } finally {
         setIsLoading(false);
       }
